@@ -354,6 +354,9 @@ public class HW1 {
         }
 
     }
+    public static void Print(){
+        System.out.println("ciao bello");
+    }
 
 
     public static void main(String[] args){
@@ -382,7 +385,7 @@ public class HW1 {
         print_double(Obj_fair_val);
 
         MRPrintStatistics2(DCi, C);
-
+        Print();
 
         /* Commenting this code out while I test the new methods
         JavaRDD<Vector>[] Input_data = CreateDatasets(data);
