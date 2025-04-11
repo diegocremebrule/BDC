@@ -64,6 +64,7 @@ public class Basics {
         test1.add(10);
         test1.add(20);
         test1.add(30);
+        test1.add(40);
 
         System.out.println(test1.get(0));
         System.out.println(test1.get(1));

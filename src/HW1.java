@@ -343,6 +343,8 @@ public class HW1 {
             NBCounts[i] = (int) Bcount;
         }
 
+
+
         List<Triple> Triplets = new ArrayList<>();
 
         for (int i = 0; i < C.length; i++){
