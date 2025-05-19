@@ -6,7 +6,6 @@ import org.apache.spark.mllib.clustering.KMeansModel;
 import org.apache.spark.mllib.linalg.Vectors;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.commons.lang3.tuple.Triple;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

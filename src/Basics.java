@@ -1,11 +1,15 @@
+import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLInvalidAuthorizationSpecException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import scala.Tuple2;
 
 public class Basics {
     public static void initial() {
@@ -47,7 +51,7 @@ public class Basics {
     }
 
     public static Vector CreateVector(){
-        return Vectors.dense(1.0,2.0,3.0);
+        JavaRDD<Vector> A = java.util.Vector.dense(1,2,3);
     }
 
     public static void ListLength(){
@@ -79,8 +83,51 @@ public class Basics {
         System.out.println(test1.get(2));
     }
 
+    public static Vector ComputeVectorX(double fixedA, double fixedB, Vector alpha, Vector beta, Vector dist, int k, double T ){
+        double gamma = 0.5;
+
+        double[] ArrayX = new double[k];
+        
+        for (int t=0; t<T; t++){
+            double fAx = fixedA;
+            double fBx = fixedB;
+
+            for (int i=0; i<k; k++){
+              double alphai = alpha.apply(i);
+              double betai = beta.apply(i);
+              double disti = dist.apply(i);
+
+              double xi = ((1-gamma)*betai*disti)/(gamma*alphai+(1-gamma)*betai);
+
+              ArrayX[i] = xi;
+
+              fAx = fAx + alphai*xi*xi;
+              fBx = fBx + betai*(disti-xi)*(disti-xi);
+
+              if (fAx == fBx){
+                break;
+              } else{
+                if (fAx > fBx){
+                    gamma = gamma + Math.pow(0.5, t+1);
+                } else {
+                    gamma = gamma - Math.pow(0.5, t+1);
+                }
+              }
+
+            }
+
+            }
+
+        Vector X = Vectors.dense(ArrayX);
+
+        return X;
+
+        }
+
+
     public static void main(String[] args) {
         ArrayTest();
+        saludo();
     }
 
 }
