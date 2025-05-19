@@ -82,6 +82,47 @@ public class G17HW1 {
         return obj_fair_val;
     }
 
+        public static Vector ComputeVectorX(double fixedA, double fixedB, Vector alpha, Vector beta, Vector dist, int k, double T ){
+        double gamma = 0.5;
+
+        double[] ArrayX = new double[k];
+        
+        for (int t=0; t<T; t++){
+            double fAx = fixedA;
+            double fBx = fixedB;
+
+            for (int i=0; i<k; k++){
+              double alphai = alpha.apply(i);
+              double betai = beta.apply(i);
+              double disti = dist.apply(i);
+
+              double xi = ((1-gamma)*betai*disti)/(gamma*alphai+(1-gamma)*betai);
+
+              ArrayX[i] = xi;
+
+              fAx = fAx + alphai*xi*xi;
+              fBx = fBx + betai*(disti-xi)*(disti-xi);
+
+              if (fAx == fBx){
+                break;
+              } else{
+                if (fAx > fBx){
+                    gamma = gamma + Math.pow(0.5, t+1);
+                } else {
+                    gamma = gamma - Math.pow(0.5, t+1);
+                }
+              }
+
+            }
+
+            }
+
+        Vector X = Vectors.dense(ArrayX);
+
+        return X;
+
+        }
+
     //Triple<Integer, Integer, Integer>
     public static List<Triple> MRPrintStatistics(JavaRDD<Vector> DCi, Vector[] C){
         JavaRDD<Double> A_Ci = DCi.filter(line -> line.apply(2)==0).map(point -> {
