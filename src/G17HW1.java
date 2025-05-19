@@ -1,8 +1,9 @@
 import java.util.ArrayList;
 import java.util.List;
-
+import scala.Tuple2;
 import org.apache.commons.lang3.tuple.Triple;
 import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.mllib.clustering.KMeans;
@@ -11,26 +12,25 @@ import org.apache.spark.mllib.linalg.Vector;
 import org.apache.spark.mllib.linalg.Vectors;
 
 public class G17HW1 {
-    public static JavaRDD<Vector> CreateDatasets(JavaRDD<String> rdd){
-        JavaRDD<Vector> U = rdd.map(line -> {
+    public static JavaPairRDD<Vector, Integer> CreateDatasets(JavaRDD<String> rdd){
+        return rdd.mapToPair(line -> {
             String[] parts = line.split(",");
-            double x = Double.parseDouble(parts[0]);
-            double y = Double.parseDouble(parts[1]);
+            double[] coordinates = new double[parts.length-1];
+            for (int i=0; i<parts.length-1; i++){
+                coordinates[i] = Double.parseDouble(parts[i]);
+            }
             int group;
-            if (parts[2].equals("A")){
+            if (parts[parts.length-1].equals("A")){
                 group = 0;
             } else {
                 group = 1;
             }
-            return Vectors.dense(x,y,group);
+            return new Tuple2<Vector,Integer>(Vectors.dense(coordinates),group);
         });
-        return U;
     };
-    public static Vector[] Kmeans_C(JavaRDD<Vector> train, int K, int M) {
+    public static Vector[] Kmeans_C(JavaPairRDD<Vector,Integer> train, int K, int M) {
         JavaRDD<Vector> points = train.map(point -> {
-            double x = point.apply(0);
-            double y = point.apply(1);
-            return Vectors.dense(x,y);
+            return point._1; //returns the first element in the tuple, which it's the coordinates
         });
         KMeansModel model = KMeans.train(points.rdd(), K, M);
         //Collect centroids in a list of Vectors
@@ -38,12 +38,12 @@ public class G17HW1 {
         for (int i = 0; i < K; i++) C[i] = model.clusterCenters()[i];
         return C;
     }
-    public static JavaRDD<Vector> CalculateDistances(JavaRDD<Vector> U, Vector[] C){
+    public static JavaRDD<Vector> CalculateDistances(JavaPairRDD<Vector,Integer> U, Vector[] C){
         JavaRDD<Vector> DCi = U.map(point -> {
-            double min = 1000000000;
             int My_C = 0;
-            double group = point.apply(2);
-            Vector coords = Vectors.dense(point.apply(0), point.apply(1));
+            double group = point._2;
+            Vector coords = point._1;
+            double min = Vectors.sqdist(coords, C[0]);
             for (int i = 0; i < C.length; i++){
                 double dist = Vectors.sqdist(coords, C[i]);
                 if (dist < min){
@@ -118,15 +118,15 @@ public class G17HW1 {
         //}
 
         //Store arguments into variables from the command line
-        //String inputFile = args[0];
-        //int L = Integer.parseInt(args[1]);
-        //int K = Integer.parseInt(args[2]);
-        //int M = Integer.parseInt(args[3]);
+        String inputFile = args[0];
+        int L = Integer.parseInt(args[1]);
+        int K = Integer.parseInt(args[2]);
+        int M = Integer.parseInt(args[3]);
 
-        String inputFile = "uber_small.csv";
-        int L = 2;
-        int K = 4;
-        int M = 20;
+        //String inputFile = "uber_small.csv";
+        //int L = 2;
+        //int K = 4;
+        //int M = 20;
 
         //We start setting up Spark environment
         SparkConf conf = new SparkConf()
@@ -148,8 +148,11 @@ public class G17HW1 {
         //Computes the number of points B, substracting NA from N
         int NB = (int)(N-NA);
 
-        //Vector RDD U is created, which contains all the points coordinates
-        JavaRDD<Vector> U = CreateDatasets(inputPoints);
+        //Vector Pair RDD U is created, which contains a tuple with two elements, the first one is the
+        //vector with the coordinates and the second one an integer with the groups represented with zeros
+        //and ones
+        JavaPairRDD<Vector, Integer> U = CreateDatasets(inputPoints);
+
         //U is used to create set C of K centroids using the function Kmeans
         Vector[] C = Kmeans_C(U, K, M);
 
@@ -183,6 +186,7 @@ public class G17HW1 {
             int NBCounts = (int) currentTriple.getRight();
             System.out.println("i= " + i + " center = " + C[i] + " NA" + i + " = " + NACounts + " NB" + i + " = " + NBCounts);
         }
+
         sc.close();
     }
 }
