@@ -82,7 +82,7 @@ public class G17HW1 {
         return obj_fair_val;
     }
 
-        public static Vector ComputeVectorX(double fixedA, double fixedB, Vector alpha, Vector beta, Vector dist, int k, double T ){
+        public static Vector ComputeVectorX(double fixedA, double fixedB, double[] alpha, double[] beta, double[] dist, int k, double T ){
         double gamma = 0.5;
 
         double[] ArrayX = new double[k];
@@ -92,9 +92,9 @@ public class G17HW1 {
             double fBx = fixedB;
 
             for (int i=0; i<k; k++){
-              double alphai = alpha.apply(i);
-              double betai = beta.apply(i);
-              double disti = dist.apply(i);
+              double alphai = alpha[i];
+              double betai = beta[i];
+              double disti = beta[i];
 
               double xi = ((1-gamma)*betai*disti)/(gamma*alphai+(1-gamma)*betai);
 
