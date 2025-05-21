@@ -50,9 +50,6 @@ public class Basics {
         }
     }
 
-    public static Vector CreateVector(){
-        JavaRDD<Vector> A = java.util.Vector.dense(1,2,3);
-    }
 
     public static void ListLength(){
         int[] test = new int[4];
